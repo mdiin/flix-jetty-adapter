@@ -1,0 +1,16 @@
+[package]
+name        = "flix-jetty-adapter"
+description = "Jetty adapter for Flix"
+version     = "11.0.15"
+flix        = "0.35.0"
+license     = "Apache-2.0"
+authors     = ["Matthias Varberg Ingesman <matthias@planm.dk>"]
+
+[mvn-dependencies]
+"org.eclipse.jetty:jetty-server" = "11.0.15"
+"org.eclipse.jetty.websocket:websocket-jetty-api" = "11.0.15"
+"org.eclipse.jetty.websocket:websocket-jetty-server" = "11.0.15"
+"org.eclipse.jetty.websocket:websocket-servlet" = "11.0.15"
+"org.eclipse.jetty.http2:http2-server" = "11.0.15"
+"org.eclipse.jetty:jetty-alpn-server" = "11.0.15"
+"org.eclipse.jetty:jetty-alpn-java-server" = "11.0.15"
