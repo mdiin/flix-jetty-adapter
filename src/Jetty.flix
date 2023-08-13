@@ -186,6 +186,26 @@ mod Jetty {
         setConnectors(server, Array#{checked_cast(httpConnector)} @ Static);
         server
 
+    def getHeaders(request: HttpServletRequest): RingResponseHeaders \ IO =
+        import jakarta.servlet.http.HttpServletRequest.getHeaderNames(): ##java.util.Enumeration \ IO;
+        import jakarta.servlet.http.HttpServletRequest.getHeaders(String): ##java.util.Enumeration \ IO;
+        import java.lang.String.toLowerCase(): String \ IO;
+        let headerNames: List[String] = EnumerationIter.toList(getHeaderNames(request)); // Wow, this seems unsafe... but okay.
+        List.foldLeft(
+            (acc, headerName) ->
+                let headerNameLCase = toLowerCase(headerName);
+                let headers: List[String] = EnumerationIter.toList(getHeaders(request, headerName));
+                match headers {
+                    case h::Nil => Map.insert(headerNameLCase, HeaderVal.Single(h), acc),
+                    case hs => match List.toNec(hs) {
+                        case Some(headerVals) => Map.insert(headerNameLCase, HeaderVal.Multi(headerVals), acc)
+                        case None => acc
+                    }
+                },
+            Map.empty(),
+            headerNames
+        )
+
     def buildRequestRecord(request: HttpServletRequest): RingRequest \ IO =
         import jakarta.servlet.http.HttpServletRequest.getServerPort(): Int32 \ IO;
         import jakarta.servlet.http.HttpServletRequest.getServerName(): String \ IO;
@@ -209,11 +229,11 @@ mod Jetty {
             scheme = getScheme(request),
             requestMethod = toLowerCase(getMethod(request)),
             protocol = getProtocol(request),
-            headers = Map.empty(), // TODO
+            headers = getHeaders(request),
             contentType = getContentType(request),
             contentLength = if (getContentLength(request) >= 0) Some(getContentLength(request)) else None,
             characterEncoding = getCharacterEncoding(request),
-            sslClientCert = None,
+            sslClientCert = None, // TODO
             body = getInputStream(request)
         }
 
